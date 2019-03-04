@@ -1,11 +1,14 @@
 telegram:
-    # 
+    # this one you get from the @BotFather
     token: xxxxxxxxx:yyyyy-zzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    
+    # the readme explains how to get the channel ID
     feedback_chat_id: wwwwwwwwwwwwww
 
 mqtt:
+    # you'll have to change all of these
     host: 127.0.0.1
-    port: 1885
+    port: 1885  # except the port number, this one is OK
     username: haha
     password: lala
 

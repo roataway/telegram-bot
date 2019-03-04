@@ -1,7 +1,7 @@
 Overview
 ========
 
-A Telegram bot to provide ETA for public transport in Chișinău. It uses MQTT to subscribe to updates related to ETAs and the locations of trolleybuses.
+A Telegram bot to provide ETA for public transport in Chișinău. A live instance is available at http://t.me/roataway_bot. 
 
 The bot is written in Python and it was tested with 3.6, though earlier versions will work too, if you install the backported version of the ``dataclasses`` module.
 
@@ -19,8 +19,10 @@ How to run it
 The credentials as well as the server connection details are deliberately not a part of this repository. They can be found on rtec.dekart.com/infodash. The ability to figure it out on your own is the qualification barrier for getting started with this bot. Note that ``infodash`` uses WebSTOMP, rather than MQTT; however, the credentials are the same.
 
 
-Data
-====
+Technical details
+=================
+
+The bot uses MQTT to subscribe to updates related to ETAs and the locations of trolleybuses.
 
 
 Message formats
@@ -67,5 +69,6 @@ Contributors and credits
 ========================
 
 * Roata wăy relies on an external data stream. None of the features of this bot would work without the backend and the hardware designed for deployment on the trolleybuses themselves.
-* Initial proof of concept written by ``name withheld``
+* The production bot instance is hosted on a server generously provided by ``name withheld``.
+* Initial proof of concept written by ``name withheld #2``.
 * How about 👉 **you** 👈?
