@@ -1,0 +1,34 @@
+station_id,station_order,station_name,direction
+16,1, str. 31 August (pornire),Centru → Aeroport
+49,2, Teatrul Mihai Eminescu,Centru → Aeroport
+50,3, str. Armenească,Centru → Aeroport
+53,4, Mag. UNIC,Centru → Aeroport
+54,5, str. Ciuflea,Centru → Aeroport
+2,6, Piața Ovidiu,Centru → Aeroport
+58,7, Spital nr.1,Centru → Aeroport
+59,8, str. Hristo Botev,Centru → Aeroport
+61,9, str. Teilor,Centru → Aeroport
+64,10, bd. Traian,Centru → Aeroport
+69,11, str. Cuza Vodă,Centru → Aeroport
+71,12, str. Burebista,Centru → Aeroport
+3,13, Valea Crucii,Centru → Aeroport
+74,14, Mag. Metro-2,Centru → Aeroport
+78,15, str. Băcioii Noi,Centru → Aeroport
+81,16, Raion Galata,Centru → Aeroport
+4,17, Aeroport (sosire),Centru → Aeroport
+15,18, Aeroport (pornire),Aeroport → Centru
+79,19, Raion Galata,Aeroport → Centru
+75,20, str. Băcioii Noi,Aeroport → Centru
+73,21, Mag. Metro-2,Aeroport → Centru
+5,22, Grădina Botanică,Aeroport → Centru
+72,23, str. Valea Crucii,Aeroport → Centru
+70,24, str. Burebista,Aeroport → Centru
+67,25, str. Cuza Vodă,Aeroport → Centru
+63,26, bd. Decebal,Aeroport → Centru
+62,27, str. Teilor,Aeroport → Centru
+60,28, str. N. Zelinski,Aeroport → Centru
+56,29, Spital nr.1,Aeroport → Centru
+6,30, str. Ciuflea,Aeroport → Centru
+52,31, Mag. UNIC,Aeroport → Centru
+46,32, str. Armenească,Aeroport → Centru
+17,33, str. 31 August (sosire),Aeroport → Centru

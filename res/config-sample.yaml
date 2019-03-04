@@ -1,0 +1,11 @@
+telegram:
+    # 
+    token: xxxxxxxxx:yyyyy-zzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    feedback_chat_id: wwwwwwwwwwwwww
+
+mqtt:
+    host: 127.0.0.1
+    port: 1885
+    username: haha
+    password: lala
+

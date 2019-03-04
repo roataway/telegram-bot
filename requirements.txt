@@ -1,0 +1,4 @@
+paho-mqtt==1.4.0
+python-telegram-bot==11.1.0
+reyaml==0.2.1
+dataclasses==0.6
