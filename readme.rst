@@ -14,7 +14,7 @@ How to run it
 #. Activate the venv with ``source venv-infopanel-chatbot/bin/activate``
 #. Install the dependencies with ``pip install -r requirements.txt``
 #. Make a copy of ``res/config-sample.yaml`` to your own config file, e.g. ``config-development.yaml``, supplying the required information in the file
-#. Run it with ``python res/config-development.yaml``
+#. Run it with ``python main.py res/config-development.yaml``
 
 The credentials as well as the server connection details are deliberately not a part of this repository. They can be found on rtec.dekart.com/infodash. The ability to figure it out on your own is the qualification barrier for getting started with this bot. Note that ``infodash`` uses WebSTOMP, rather than MQTT; however, the credentials are the same.
 
@@ -26,7 +26,7 @@ Data
 Message formats
 ---------------
 
-There are 2 types of messages at the moment:
+There are 2 types of messages that are received via MQTT at the moment:
 
 #. ETA updates that look like this: ``{"eta": {"30": [[3, "3898"], [22, "3913"]]}, "station_id": 17, "name": "str. 31 August - sosire"}``
 #. Transport coordinates, which also come as JSON, containing the following keys: ``rtu_id, board, route, lat, lon, speed, dir``
@@ -57,7 +57,15 @@ To set a lit of commands, go to @BotFather and send ``/setcommands`` for the bot
     help - Află cum îți pot fi de folos
     about - Despre mine
 
-Notes on obtaining ``FEEDBACK_CHAT_ID``, it is a unique chat identifier, which you need if you want the bot to post messages somewhere. You can get this number using several methods:
+Notes on obtaining ``feedback_chat_id``, it is a unique chat identifier, which you need if you want the bot to post messages somewhere. You can get this number using several methods:
 
 #. Go to ``https://api.telegram.org/bot<token>/getUpdates`` and look around
 #. Or add ``@RawDataBot`` to the group or the channel in question, and watch its debug output as you post a message. Don't forget to kick it out of the group once you've got the number.
+
+
+Contributors and credits
+========================
+
+* Roata wăy relies on an external data stream. None of the features of this bot would work without the backend and the hardware designed for deployment on the trolleybuses themselves.
+* Initial proof of concept written by ``name withheld``
+* How about 👉 **you** 👈?
