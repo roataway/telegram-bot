@@ -10,9 +10,9 @@ import constants as c
 
 
 default_board = [
-                 [KeyboardButton('/prognosis')],
-                 [KeyboardButton('/help'), KeyboardButton('/about'), KeyboardButton('/feedback')]
-                ]
+    [KeyboardButton("/prognosis")],
+    [KeyboardButton("/help"), KeyboardButton("/about"), KeyboardButton("/feedback")],
+]
 
 
 def build_route_menu(routes):

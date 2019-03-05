@@ -7,7 +7,7 @@ log = logging.getLogger("struct")
 @dataclass
 class Route:
     # human-readable name of the route, usually it is a number like "30",
-    # but we still treat them as strings, because they can be something like "30A" 
+    # but we still treat them as strings, because they can be something like "30A"
     name: str
 
     # a list of strings that contains 2 items, corresponding to the directions
