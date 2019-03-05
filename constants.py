@@ -1,6 +1,8 @@
 VERSION = "1.2"
 ICON_BUS = "🚌"
 
+SUPPORTED_ROUTES = ["30",]
+
 QOS_EXACTLY_ONCE = 2  # MQTT quality of service
 
 STATE_EXPECTING_FEEDBACK = 0

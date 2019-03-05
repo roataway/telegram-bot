@@ -74,7 +74,6 @@ class Infobot:
             # the key isn't there, it means the backend doesn't have this info
             # yet. We ignore it for now, the info will be here within a few iterations
             pass
-        # log.debug('Update RTU:%s, station %s', transport.rtu_id, transport.last_station_order)
 
     def load_route(self, path, route_name):
         """Load route data from the given CSV file
@@ -113,13 +112,10 @@ class Infobot:
         log.info("Loading station data")
         for entry in os.listdir("res/routes"):
             route_name, _extension = os.path.splitext(entry)
-            if route_name != "30":
-                # for now we only support route 30 and ignore the others
-                continue
-            route = self.load_route(os.path.join("res/routes", entry), route_name)
-
-            self.routes[route_name] = route
-            self.predictions[route_name] = {}
+            if route_name in c.SUPPORTED_ROUTES:
+                route = self.load_route(os.path.join("res/routes", entry), route_name)
+                self.routes[route_name] = route
+                self.predictions[route_name] = {}
 
     def serve(self):
         """The main loop"""
@@ -145,10 +141,7 @@ class Infobot:
         command, if any.
         :param raw: str, the raw text sent by the user"""
         parts = raw.split(" ", 1)
-        if len(parts) == 1:
-            return None
-        else:
-            return parts[1]
+        return None if len(parts) == 1 else parts[1]
 
     def form_digest(self, route, station_id=None):
         """Form a digest of ETAs for a given route and optionally, a station_id
@@ -212,7 +205,6 @@ class Infobot:
             etas = self.predictions[route].get(station_id, [])
             if not etas:
                 result += f"{station_name}: 🚫\n"
-                # result += f'{station_name:<30}: 🚫\n'
                 continue
 
             string_etas = ", ".join([str(item) for item in etas])
@@ -274,7 +266,6 @@ class Infobot:
                 return
 
             etas = self.form_digest_markdown(route)
-            # update.message.reply_text(etas)
             bot.sendMessage(
                 chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN
             )
@@ -288,7 +279,6 @@ class Infobot:
                 disable_notification=True,
                 disable_web_page_preview=True,
             )
-            # update.message.reply_text(nudges)
 
     @staticmethod
     def on_bot_help(bot, update):
@@ -309,8 +299,7 @@ class Infobot:
         update.message.reply_text(c.MSG_FEEDBACK)
         return c.STATE_EXPECTING_FEEDBACK
 
-    @staticmethod
-    def on_bot_feedback_received(bot, update):
+    def on_bot_feedback_received(self, bot, update):
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
@@ -365,7 +354,6 @@ class Infobot:
         route = query.data
 
         etas = self.form_digest_markdown(route)
-        # update.message.reply_text(etas)
         bot.sendMessage(
             chat_id=query.message.chat_id,
             text=etas,
@@ -383,14 +371,6 @@ class Infobot:
             disable_notification=True,
             disable_web_page_preview=True,
         )
-        # update.message.reply_text(nudges)
-
-        # response = self.form_digest(route)
-        #
-        #
-        # bot.edit_message_text(text=response,
-        #                       chat_id=query.message.chat_id,
-        #                       message_id=query.message.message_id)
 
     def send_locations(self, bot, chat_id, route):
         """Send transport unit location info to the user
@@ -419,7 +399,6 @@ class Infobot:
                 title=segment_name,
                 address=board_info,
             )
-            # bot.send_location(chat_id, latitude=entry.latitude, longitude=entry.longitude, disable_notification=True)
 
         return
 
@@ -470,7 +449,6 @@ class Infobot:
                 )
 
     def on_mqtt(self, client, userdata, msg):
-        # log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
         try:
             data = json.loads(msg.payload)
         except ValueError:
@@ -507,7 +485,6 @@ class Infobot:
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.DEBUG,
-        # format='%(asctime)s %(levelname)5s %(name)12s  %(threadName)s - %(message)s')
         format="%(asctime)s %(levelname)5s %(name)5s - %(message)s",
     )
 
