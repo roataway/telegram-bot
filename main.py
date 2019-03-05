@@ -211,7 +211,6 @@ class Infobot:
 
     def on_bot_prognosis(self, bot, update):
         """Send a message when the command /prognosis is issued."""
-        user = update.effective_user
         raw_text = update.message.text
 
         route = self.get_params(raw_text)
@@ -256,7 +255,6 @@ class Infobot:
     @staticmethod
     def on_bot_feedback(bot, update):
         """Send a message when the command /feeedback is issued."""
-        user = update.effective_user
         update.message.reply_text(c.MSG_FEEDBACK)
         return c.STATE_EXPECTING_FEEDBACK
 
@@ -289,7 +287,6 @@ class Infobot:
         dispatcher.add_handler(CommandHandler("help", self.on_bot_help))
         dispatcher.add_handler(CommandHandler("prognosis", self.on_bot_prognosis))
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
-        # dispatcher.add_handler(CommandHandler("feedback", self.on_bot_feedback))
         dispatcher.add_handler(self.feedback_handler())
         dispatcher.add_handler(CallbackQueryHandler(self.on_bot_route_button))
         dispatcher.add_error_handler(self.on_bot_error)
@@ -311,7 +308,6 @@ class Infobot:
         """Invoked when they sent /prognosis without a parameter, then clicked
         a button from the list of routes"""
         query = update.callback_query
-        user = update.effective_user
         route = query.data
 
         etas = self.form_digest_markdown(route)
