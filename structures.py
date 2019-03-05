@@ -7,7 +7,7 @@ log = logging.getLogger("struct")
 @dataclass
 class Route:
     # human-readable name of the route, usually it is a number like "30",
-    # but we still treat them as strings, because they can be something like "30A" 
+    # but we still treat them as strings, because they can be something like "30A"
     name: str
 
     # a list of strings that contains 2 items, corresponding to the directions
@@ -47,4 +47,3 @@ class Transport:
     # the order number of the last visited station, this is used to display a header above the map
     # with the trolleybus position, to make it obvious which way it is moving.
     last_station_order: int = None
-

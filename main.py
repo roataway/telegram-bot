@@ -5,8 +5,14 @@ import csv
 import os
 
 from reyaml import load_from_file
-from telegram.ext import (Updater, CommandHandler, CallbackQueryHandler, ConversationHandler,
-                          MessageHandler, Filters)
+from telegram.ext import (
+    Updater,
+    CommandHandler,
+    CallbackQueryHandler,
+    ConversationHandler,
+    MessageHandler,
+    Filters,
+)
 from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup, ParseMode
 
 from structures import Route, Transport
@@ -14,8 +20,7 @@ import constants as c
 import keyboards as k
 from mqtt_client import MqttClient
 
-log = logging.getLogger('infobot')
-
+log = logging.getLogger("infobot")
 
 
 class Infobot:
@@ -23,7 +28,7 @@ class Infobot:
         """Constructor
         :param mqtt: instance of MqttClient object
         :param bot: instance of Telegram bot object
-        :param config: dict, the raw config (normally loaded from YAML)""" 
+        :param config: dict, the raw config (normally loaded from YAML)"""
         self.mqtt = mqtt
         self.bot = bot
         self.config = config
@@ -43,29 +48,28 @@ class Infobot:
         # state of this transport unit
         # TODO should be an expiring dict
         self.transports = {}
-        
-        self.feedback_chat_id = self.config['telegram']['feedback_chat_id']
 
+        self.feedback_chat_id = self.config["telegram"]["feedback_chat_id"]
 
     def refresh_transport(self, data):
         """Update the state info of a given transport
         :param data: dict, the metadata about the transport whereabouts, the keys
                      are:  rtu_id, board, route, lat, lon, speed, dir"""
         try:
-            transport = self.transports[data['board']]
+            transport = self.transports[data["board"]]
         except KeyError:
             transport = Transport()
-            transport.board_name = data['board']
-            transport.rtu_id = data['rtu_id']
-            transport.route = data['route']
-            self.transports[data['board']] = transport
+            transport.board_name = data["board"]
+            transport.rtu_id = data["rtu_id"]
+            transport.route = data["route"]
+            self.transports[data["board"]] = transport
 
-        transport.latitude = data['lat']
-        transport.longitude = data['lon']
-        transport.speed = data['speed']
-        transport.direction = data['dir']
+        transport.latitude = data["lat"]
+        transport.longitude = data["lon"]
+        transport.speed = data["speed"]
+        transport.direction = data["dir"]
         try:
-            transport.last_station_order = data['last_station']
+            transport.last_station_order = data["last_station"]
         except KeyError:
             # the key isn't there, it means the backend doesn't have this info
             # yet. We ignore it for now, the info will be here within a few iterations
@@ -77,7 +81,7 @@ class Infobot:
         :param path: str, full path to CSV file
         :param route_name: str, human-readable name of the route"""
         segments = []
-        last_segment = ''
+        last_segment = ""
         cutoff_station_id = None
         station_sequence = []
 
@@ -106,13 +110,13 @@ class Infobot:
 
     def preload_structures(self):
         """Load information about routes from the available resource files"""
-        log.info('Loading station data')
-        for entry in os.listdir('res/routes'):
+        log.info("Loading station data")
+        for entry in os.listdir("res/routes"):
             route_name, _extension = os.path.splitext(entry)
-            if route_name != '30':
+            if route_name != "30":
                 # for now we only support route 30 and ignore the others
                 continue
-            route = self.load_route(os.path.join('res/routes', entry), route_name)
+            route = self.load_route(os.path.join("res/routes", entry), route_name)
 
             self.routes[route_name] = route
             self.predictions[route_name] = {}
@@ -123,8 +127,12 @@ class Infobot:
 
         # MQTT's loop won't block, it runs in a separate thread
         self.mqtt.set_external_handler(self.on_mqtt)
-        self.mqtt.client.subscribe([('state/station/+', c.QOS_EXACTLY_ONCE),
-                                    ('state/transport/+', c.QOS_EXACTLY_ONCE)])
+        self.mqtt.client.subscribe(
+            [
+                ("state/station/+", c.QOS_EXACTLY_ONCE),
+                ("state/transport/+", c.QOS_EXACTLY_ONCE),
+            ]
+        )
         self.mqtt.client.loop_start()
 
         self.init_bot()
@@ -136,7 +144,7 @@ class Infobot:
         """Retrieve the parameters that were transmitted along with the
         command, if any.
         :param raw: str, the raw text sent by the user"""
-        parts = raw.split(' ', 1)
+        parts = raw.split(" ", 1)
         if len(parts) == 1:
             return None
         else:
@@ -151,28 +159,32 @@ class Infobot:
             return str(data)
 
         # otherwise it is a request for the whole thing
-        result = ''
+        result = ""
         last_prognosis = None
         for station_id in self.routes[route]:
             station_name = self.stations[route][station_id]
             etas = self.predictions[route].get(station_id, [])
             if not etas:
-                result += f'{station_name}: 🚫\n'
+                result += f"{station_name}: 🚫\n"
                 continue
 
-            string_etas = ', '.join([str(item) for item in etas])
+            string_etas = ", ".join([str(item) for item in etas])
             current_prognosis = etas[0]
             if current_prognosis == 0:
                 # it means the trolleybus is there right now, let's add a
                 # trolleybus icon, for a better effect
-                result += f'{c.ICON_BUS} {station_name}: {string_etas}\n'
+                result += f"{c.ICON_BUS} {station_name}: {string_etas}\n"
             else:
-                if last_prognosis is not None and last_prognosis != 0 and current_prognosis < last_prognosis:
+                if (
+                    last_prognosis is not None
+                    and last_prognosis != 0
+                    and current_prognosis < last_prognosis
+                ):
                     # it means we're dealing with the case where the transport is
                     # between stations, so we render a bus icon between stations
                     # result += f'{c.ICON_BUS} în tranzit...\n'
-                    result += f'{c.ICON_BUS}\n'
-                result += f'{station_name}: {string_etas}\n'
+                    result += f"{c.ICON_BUS}\n"
+                result += f"{station_name}: {string_etas}\n"
             last_prognosis = current_prognosis
 
         return result
@@ -186,8 +198,7 @@ class Infobot:
             return str(data)
 
         # otherwise it is a request for the whole thing
-        result = '''*%s*\n''' % self.routes[route].segments[0]
-
+        result = """*%s*\n""" % self.routes[route].segments[0]
 
         last_prognosis = None
         for station_id in self.routes[route].station_sequence:
@@ -195,28 +206,32 @@ class Infobot:
             if station_id == self.routes[route].cutoff_station_id:
                 # for easier readability, we add the header for the return part
                 # of the route
-                result += '\n*%s*\n''' % self.routes[route].segments[0]
+                result += "\n*%s*\n" "" % self.routes[route].segments[0]
 
             station_name = self.all_stations[station_id]
             etas = self.predictions[route].get(station_id, [])
             if not etas:
-                result += f'{station_name}: 🚫\n'
+                result += f"{station_name}: 🚫\n"
                 # result += f'{station_name:<30}: 🚫\n'
                 continue
 
-            string_etas = ', '.join([str(item) for item in etas])
+            string_etas = ", ".join([str(item) for item in etas])
             current_prognosis = etas[0]
             if current_prognosis == 0:
                 # it means the trolleybus is there right now, let's add a
                 # trolleybus icon, for a better effect
-                result += f'{c.ICON_BUS} {station_name}: {string_etas}\n'
+                result += f"{c.ICON_BUS} {station_name}: {string_etas}\n"
             else:
-                if last_prognosis is not None and last_prognosis != 0 and current_prognosis < last_prognosis:
+                if (
+                    last_prognosis is not None
+                    and last_prognosis != 0
+                    and current_prognosis < last_prognosis
+                ):
                     # it means we're dealing with the case where the transport is
                     # between stations, so we render a bus icon between stations
                     # result += f'{c.ICON_BUS} în tranzit...\n'
-                    result += f'{c.ICON_BUS} \n'
-                result += f'{station_name}: {string_etas}\n'
+                    result += f"{c.ICON_BUS} \n"
+                result += f"{station_name}: {string_etas}\n"
             last_prognosis = current_prognosis
 
         return result
@@ -225,13 +240,21 @@ class Infobot:
     def on_bot_start(bot, update):
         """Send a message when the command /start is issued."""
         user = update.effective_user
-        update.message.reply_text(f'Bine ai venit, {user.username or user.full_name}. Roata v{c.VERSION} te ascultă!'
-                                  f'\n Comanda /help îți va arăta ce pot face și va explica '
-                                  f'cum să interpretezi răspunsurile mele.\n\n{c.MSG_HELP}')
-        update.message.reply_text(f'Nu uita să povestești colegilor despre mine. Rrrroata wăy!!!')
+        update.message.reply_text(
+            f"Bine ai venit, {user.username or user.full_name}. Roata v{c.VERSION} te ascultă!"
+            f"\n Comanda /help îți va arăta ce pot face și va explica "
+            f"cum să interpretezi răspunsurile mele.\n\n{c.MSG_HELP}"
+        )
+        update.message.reply_text(
+            f"Nu uita să povestești colegilor despre mine. Rrrroata wăy!!!"
+        )
 
-        bot.sendMessage(chat_id=update.message.chat_id, text='test', parse_mode='HTML',
-                        reply_markup=ReplyKeyboardMarkup(k.default_board, one_time_keyboard=True))
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
+            text="test",
+            parse_mode="HTML",
+            reply_markup=ReplyKeyboardMarkup(k.default_board, one_time_keyboard=True),
+        )
 
     def on_bot_prognosis(self, bot, update):
         """Send a message when the command /prognosis is issued."""
@@ -252,12 +275,19 @@ class Infobot:
 
             etas = self.form_digest_markdown(route)
             # update.message.reply_text(etas)
-            bot.sendMessage(chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN)
+            bot.sendMessage(
+                chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN
+            )
 
             self.send_locations(bot, update.message.chat_id, route)
-            nudges = c.MSG_FEEDBACK_NUDGE + '\n' + c.MSG_CREDIT + '\n' + c.MSG_CHANGELOG
-            bot.sendMessage(chat_id=update.message.chat_id, text=nudges, parse_mode=ParseMode.HTML,
-                            disable_notification=True, disable_web_page_preview=True)
+            nudges = c.MSG_FEEDBACK_NUDGE + "\n" + c.MSG_CREDIT + "\n" + c.MSG_CHANGELOG
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text=nudges,
+                parse_mode=ParseMode.HTML,
+                disable_notification=True,
+                disable_web_page_preview=True,
+            )
             # update.message.reply_text(nudges)
 
     @staticmethod
@@ -265,7 +295,7 @@ class Infobot:
         """Send a message when the command /help is issued."""
         update.message.reply_text(c.MSG_HELP)
         update.message.reply_text(c.MSG_SAMPLE)
-        update.message.reply_photo(photo=open('res/help-screenshot.png', 'rb'))
+        update.message.reply_photo(photo=open("res/help-screenshot.png", "rb"))
 
     @staticmethod
     def on_bot_about(bot, update):
@@ -284,10 +314,10 @@ class Infobot:
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
-        log.info(f'FEED from [{user.username}]: {raw_text}')
+        log.info(f"FEED from [{user.username}]: {raw_text}")
         update.message.reply_text(c.MSG_THANKS)
 
-        report = f'FEED from [{user.username or user.full_name}]: {raw_text}'
+        report = f"FEED from [{user.username or user.full_name}]: {raw_text}"
         bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
         return ConversationHandler.END
 
@@ -317,13 +347,13 @@ class Infobot:
     def feedback_handler(self):
         """This creates a conversation in which we ask the user to provide feedback"""
         handler = ConversationHandler(
-            entry_points=[CommandHandler('feedback', self.on_bot_feedback)],
-
+            entry_points=[CommandHandler("feedback", self.on_bot_feedback)],
             states={
-                c.STATE_EXPECTING_FEEDBACK: [MessageHandler(Filters.text, self.on_bot_feedback_received)]
+                c.STATE_EXPECTING_FEEDBACK: [
+                    MessageHandler(Filters.text, self.on_bot_feedback_received)
+                ]
             },
-
-            fallbacks=[CommandHandler('cancel', self.on_bot_feedback_cancel)]
+            fallbacks=[CommandHandler("cancel", self.on_bot_feedback_cancel)],
         )
         return handler
 
@@ -336,13 +366,23 @@ class Infobot:
 
         etas = self.form_digest_markdown(route)
         # update.message.reply_text(etas)
-        bot.sendMessage(chat_id=query.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN, disable_notification=True)
+        bot.sendMessage(
+            chat_id=query.message.chat_id,
+            text=etas,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_notification=True,
+        )
 
         self.send_locations(bot, query.message.chat_id, route)
 
-        nudges = c.MSG_FEEDBACK_NUDGE + '\n' + c.MSG_CREDIT + '\n' + c.MSG_CHANGELOG
-        bot.sendMessage(chat_id=query.message.chat_id, text=nudges, parse_mode=ParseMode.HTML,
-                        disable_notification=True, disable_web_page_preview=True)
+        nudges = c.MSG_FEEDBACK_NUDGE + "\n" + c.MSG_CREDIT + "\n" + c.MSG_CHANGELOG
+        bot.sendMessage(
+            chat_id=query.message.chat_id,
+            text=nudges,
+            parse_mode=ParseMode.HTML,
+            disable_notification=True,
+            disable_web_page_preview=True,
+        )
         # update.message.reply_text(nudges)
 
         # response = self.form_digest(route)
@@ -362,25 +402,37 @@ class Infobot:
         for entry in transports:
             if entry.last_station_order is None:
                 # It must be a non-empty string, hence it is a space.
-                segment_name = ' '
+                segment_name = " "
             else:
-                segment_name = route_obj.segments[0] if entry.last_station_order < route_obj.cutoff_station_id else route_obj.segments[1]
+                segment_name = (
+                    route_obj.segments[0]
+                    if entry.last_station_order < route_obj.cutoff_station_id
+                    else route_obj.segments[1]
+                )
 
-            board_info = f'bord nr. {entry.board_name}'
-            bot.send_venue(chat_id, latitude=entry.latitude, longitude=entry.longitude,
-                           disable_notification=True, title=segment_name, address=board_info)
+            board_info = f"bord nr. {entry.board_name}"
+            bot.send_venue(
+                chat_id,
+                latitude=entry.latitude,
+                longitude=entry.longitude,
+                disable_notification=True,
+                title=segment_name,
+                address=board_info,
+            )
             # bot.send_location(chat_id, latitude=entry.latitude, longitude=entry.longitude, disable_notification=True)
 
         return
 
-
-
-        route_transports = [item for item in self.transports.values() if item.route==route and
-                            # we need the second condition to deal with the cases when it is not
-                            # yet known what station the transport has last visited, so it is
-                            # impossible to determine whether it is before or beyond the
-                            # cut-off point in the route sequence
-                            item.last_station_order is not None]
+        route_transports = [
+            item
+            for item in self.transports.values()
+            if item.route == route and
+            # we need the second condition to deal with the cases when it is not
+            # yet known what station the transport has last visited, so it is
+            # impossible to determine whether it is before or beyond the
+            # cut-off point in the route sequence
+            item.last_station_order is not None
+        ]
 
         if not route_transports:
             # if the list is empty, it means all the transports are offline or missing
@@ -392,39 +444,50 @@ class Infobot:
         route_obj = self.routes[route]
 
         # send info for the first segment
-        bot.sendMessage(chat_id=chat_id, text=route_obj.segments[0], disable_notification=True)
+        bot.sendMessage(
+            chat_id=chat_id, text=route_obj.segments[0], disable_notification=True
+        )
         for entry in route_transports:
             if entry.last_station_order < route_obj.cutoff_station_id:
-                bot.send_location(chat_id, latitude=entry.latitude, longitude=entry.longitude, disable_notification=True)
+                bot.send_location(
+                    chat_id,
+                    latitude=entry.latitude,
+                    longitude=entry.longitude,
+                    disable_notification=True,
+                )
 
         # and then for the second segment
-        bot.sendMessage(chat_id=chat_id, text=route_obj.segments[1], disable_notification=True)
+        bot.sendMessage(
+            chat_id=chat_id, text=route_obj.segments[1], disable_notification=True
+        )
         for entry in route_transports:
             if entry.last_station_order > route_obj.cutoff_station_id:
-                bot.send_location(chat_id, latitude=entry.latitude, longitude=entry.longitude, disable_notification=True)
-
-
+                bot.send_location(
+                    chat_id,
+                    latitude=entry.latitude,
+                    longitude=entry.longitude,
+                    disable_notification=True,
+                )
 
     def on_mqtt(self, client, userdata, msg):
         # log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
         try:
             data = json.loads(msg.payload)
         except ValueError:
-            log.debug('Ignoring bad MQTT data %s', repr(msg.payload))
+            log.debug("Ignoring bad MQTT data %s", repr(msg.payload))
             return
 
-        if 'station' in msg.topic:
+        if "station" in msg.topic:
             # we're dealing with data concerning ETA predictions
-            route = list(data['eta'].keys())[0]
-            station_id = data['station_id']
+            route = list(data["eta"].keys())[0]
+            station_id = data["station_id"]
             if route not in self.predictions:
                 # if this route is not yet in our state dict, add it
                 self.predictions[route] = {}
 
             # first, we discard the information about the board numbers, as we won't use it
             # here, we extract just the ETAs
-            predictions = [eta for eta, board in data['eta'][route]]
-
+            predictions = [eta for eta, board in data["eta"][route]]
 
             # sometimes there are dupes, so we turn them into a set, to filter those dupes
             predictions = sorted(list(set(predictions)))
@@ -435,37 +498,44 @@ class Infobot:
             #     predictions = []
             self.predictions[route][station_id] = predictions
 
-        elif 'transport' in msg.topic:
+        elif "transport" in msg.topic:
             # we're dealing with location data about the whereabouts of a trolleybus. The
             # data is a dict with the following keys: rtu_id, board, route, lat, lon, speed, dir
             self.refresh_transport(data)
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG,
-                        # format='%(asctime)s %(levelname)5s %(name)12s  %(threadName)s - %(message)s')
-                        format='%(asctime)s %(levelname)5s %(name)5s - %(message)s')
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.DEBUG,
+        # format='%(asctime)s %(levelname)5s %(name)12s  %(threadName)s - %(message)s')
+        format="%(asctime)s %(levelname)5s %(name)5s - %(message)s",
+    )
 
-    logging.getLogger('telegram').setLevel(logging.WARNING)
-    logging.getLogger('JobQueue').setLevel(logging.WARNING)
-    log.info('Starting Infobot v%s', c.VERSION)
+    logging.getLogger("telegram").setLevel(logging.WARNING)
+    logging.getLogger("JobQueue").setLevel(logging.WARNING)
+    log.info("Starting Infobot v%s", c.VERSION)
 
     config_path = sys.argv[-1]
 
-    log.info('Processing config from `%s`', config_path)
+    log.info("Processing config from `%s`", config_path)
     config = load_from_file(config_path)
 
-    mqtt_conf = config['mqtt']
-    mqtt = MqttClient(name='infobot', broker=mqtt_conf['host'], port=mqtt_conf['port'],
-                      username=mqtt_conf['username'], password=mqtt_conf['password'])
-    bot = Updater(token=config['telegram']['token'])
+    mqtt_conf = config["mqtt"]
+    mqtt = MqttClient(
+        name="infobot",
+        broker=mqtt_conf["host"],
+        port=mqtt_conf["port"],
+        username=mqtt_conf["username"],
+        password=mqtt_conf["password"],
+    )
+    bot = Updater(token=config["telegram"]["token"])
 
     infobot = Infobot(mqtt, bot, config)
 
     try:
         infobot.serve()
     except KeyboardInterrupt:
-        log.debug('Interactive quit')
+        log.debug("Interactive quit")
         sys.exit()
     finally:
-        log.info('Quitting')
+        log.info("Quitting")
