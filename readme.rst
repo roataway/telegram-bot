@@ -22,7 +22,7 @@ Pipenv way
 
 #. Talk to @BotFather to register your bot and get a token, as described here: https://core.telegram.org/bots#6-botfather
 #. Install pipenv ``pip install pipenv``
-#. Then run ``pipenv install``. It will deal automatically with the venv creation and dependecy installing
+#. Then run ``pipenv install --dev``. It will deal automatically with the venv creation and dependecy installing
 #. Make a copy of ``res/config-sample.yaml`` to your own config file, e.g. ``config-development.yaml``, supplying the required information in the file
 #. Run it with ``python main.py res/config-development.yaml``
 
@@ -58,6 +58,11 @@ For historical reasons, the code, comments and the instructions are written in E
 If you made any changes, send a pull request, explaining what you've done and why you've done it.
 
 If you need any help, just ask.
+
+Before commit
+-------------
+1. Run ``make autoformat`` to format all `.py` files
+2. Run ``make verify`` and examine the output, looking for issues that need to be addressed
 
 
 Bot configuration

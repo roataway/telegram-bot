@@ -4,7 +4,7 @@ import paho.mqtt.client as paho
 log = logging.getLogger("mqtt")
 
 
-class MqttClient(object):
+class MqttClient:
     def __init__(
         self,
         name,
@@ -46,4 +46,3 @@ class MqttClient(object):
             self.external_handler(client, userdata, msg)
         else:
             log.debug("MQTT IN %s %s", msg.topic, msg.payload)
-

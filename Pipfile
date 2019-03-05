@@ -6,6 +6,8 @@ verify_ssl = true
 [dev-packages]
 black = "*"
 pylint = "*"
+flake8 = "*"
+bandit = "*"
 
 [packages]
 paho-mqtt = "*"

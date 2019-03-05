@@ -1,5 +1,4 @@
 from telegram import InlineKeyboardButton, KeyboardButton
-import constants as c
 
 # this keyboard is not used at the moment
 # main_board = [[InlineKeyboardButton("Prognoze", callback_data='prognosis')],
@@ -27,4 +26,3 @@ def build_route_menu(routes):
         row.append(InlineKeyboardButton(str(route), callback_data=str(route)))
 
     return [row]
-

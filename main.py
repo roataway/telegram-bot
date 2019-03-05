@@ -539,4 +539,3 @@ if __name__ == "__main__":
         sys.exit()
     finally:
         log.info("Quitting")
-

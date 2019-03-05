@@ -47,4 +47,3 @@ class Transport:
     # the order number of the last visited station, this is used to display a header above the map
     # with the trolleybus position, to make it obvious which way it is moving.
     last_station_order: int = None
-
