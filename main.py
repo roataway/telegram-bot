@@ -143,45 +143,6 @@ class Infobot:
         parts = raw.split(" ", 1)
         return None if len(parts) == 1 else parts[1]
 
-    def form_digest(self, route, station_id=None):
-        """Form a digest of ETAs for a given route and optionally, a station_id
-        :param route: str, route number/name
-        :param station_id: int, optional, station for which you want the data"""
-        if station_id is not None:
-            data = self.predictions[route][station_id]
-            return str(data)
-
-        # otherwise it is a request for the whole thing
-        result = ""
-        last_prognosis = None
-        for station_id in self.routes[route]:
-            station_name = self.stations[route][station_id]
-            etas = self.predictions[route].get(station_id, [])
-            if not etas:
-                result += f"{station_name}: 🚫\n"
-                continue
-
-            string_etas = ", ".join([str(item) for item in etas])
-            current_prognosis = etas[0]
-            if current_prognosis == 0:
-                # it means the trolleybus is there right now, let's add a
-                # trolleybus icon, for a better effect
-                result += f"{c.ICON_BUS} {station_name}: {string_etas}\n"
-            else:
-                if (
-                    last_prognosis is not None
-                    and last_prognosis != 0
-                    and current_prognosis < last_prognosis
-                ):
-                    # it means we're dealing with the case where the transport is
-                    # between stations, so we render a bus icon between stations
-                    # result += f'{c.ICON_BUS} în tranzit...\n'
-                    result += f"{c.ICON_BUS}\n"
-                result += f"{station_name}: {string_etas}\n"
-            last_prognosis = current_prognosis
-
-        return result
-
     def form_digest_markdown(self, route, station_id=None):
         """Form a digest of ETAs for a given route and optionally, a station_id
         :param route: str, route number/name
