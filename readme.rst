@@ -41,8 +41,32 @@ Message formats
 
 There are 2 types of messages that are received via MQTT at the moment:
 
-#. ETA updates that look like this: ``{"eta": {"30": [[3, "3898"], [22, "3913"]]}, "station_id": 17, "name": "str. 31 August - sosire"}``
-#. Transport coordinates, which also come as JSON, containing the following keys: ``rtu_id, board, route, lat, lon, speed, dir``
+1. ETA updates that look like this:
+::
+
+  {
+    "eta": {
+      "30": [
+        [3, "3898"],
+        [22, "3913"]
+      ]
+    },
+    "station_id": 17,
+    "name": "str. 31 August - sosire"
+  }
+
+2. Transport coordinates, which also come as JSON, containing the following keys:
+::
+
+  {
+    "rtu_id": ...,
+    "board": ...,
+    "route": ...,
+    "lat": ...,
+    "lon": ...,
+    "speed": ...,
+    "dir": ...
+  }
 
 Station details
 ---------------
