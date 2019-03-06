@@ -9,25 +9,30 @@ The bot is written in Python and it was tested with 3.6, though earlier versions
 How to run it
 =============
 
+Prerequisites
+-------------
+
 #. Talk to @BotFather to register your bot and get a token, as described here: https://core.telegram.org/bots#6-botfather
+#. Make a copy of ``res/config-sample.yaml`` to your own config file, e.g. ``config-development.yaml``, supplying the required information in the file
+#. Replicate the environment using ``virtualenv`` or ``pipenv``, as described below
+#. When done, run it with ``python main.py res/config-development.yaml``
+
+The credentials as well as the server connection details are deliberately not a part of this repository. They can be found on rtec.dekart.com/infodash. The ability to figure it out on your own is the qualification barrier for getting started with this bot. Note that ``infodash`` uses WebSTOMP, rather than MQTT; however, the credentials are the same.
+
+
+Virtualenv
+----------
+
 #. Create the virtualenv ``virtualenv venv-infopanel-chatbot`` to install the dependencies in it
 #. Activate the venv with ``source venv-infopanel-chatbot/bin/activate``
 #. Install the dependencies with ``pip install -r requirements.txt``
-#. Make a copy of ``res/config-sample.yaml`` to your own config file, e.g. ``config-development.yaml``, supplying the required information in the file
-#. Run it with ``python main.py res/config-development.yaml``
 
 
-Pipenv way
-==========
+Pipenv
+------
 
-#. Talk to @BotFather to register your bot and get a token, as described here: https://core.telegram.org/bots#6-botfather
 #. Install pipenv ``pip install pipenv``
 #. Then run ``pipenv install --dev``. It will deal automatically with the venv creation and dependecy installing
-#. Make a copy of ``res/config-sample.yaml`` to your own config file, e.g. ``config-development.yaml``, supplying the required information in the file
-#. Run it with ``python main.py res/config-development.yaml``
-
-
-The credentials as well as the server connection details are deliberately not a part of this repository. They can be found on rtec.dekart.com/infodash. The ability to figure it out on your own is the qualification barrier for getting started with this bot. Note that ``infodash`` uses WebSTOMP, rather than MQTT; however, the credentials are the same.
 
 
 Technical details
@@ -41,7 +46,7 @@ Message formats
 
 There are 2 types of messages that are received via MQTT at the moment, all payloads are in JSON format:
 
-1. ETA updates that contain a list of estimates for the next couple of incoming transports:
+1. ETA updates that contain a list of estimates for the next couple of incoming transports. Such messages arrive in batches, approximately twice per minute:
 ::
 
   {
@@ -55,7 +60,7 @@ There are 2 types of messages that are received via MQTT at the moment, all payl
     },
   }
 
-2. Transport coordinates, which contain data about the last known location and speed of a given trolleybus:
+2. Transport coordinates, which contain data about the last known location and speed of a given trolleybus. These are sent every ~6s:
 ::
 
   {
@@ -94,8 +99,16 @@ If you need any help, just ask.
 
 Before commit
 -------------
+
 1. Run ``make autoformat`` to format all ``.py`` files
 2. Run ``make verify`` and examine the output, looking for issues that need to be addressed
+
+
+Building the readme
+-------------------
+
+#. Install ``rst2html`` (on Debian and its derivatives: ``sudo apt install docutils-common``).
+#. Run ``rst2html readme.rst > readme.html`` to render the output and make sure it looks good.
 
 
 Bot configuration
