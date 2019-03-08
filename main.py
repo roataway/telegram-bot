@@ -39,14 +39,16 @@ class Infobot:
         # the key will be a string with the route name, and the value will be Route objects
         self.routes = {}
 
-        # all = for all routes, as some stations are shared between them, so they're all
-        # in one namespace
+        # This dict maps {station_id: station_name} for all routes, as some stations are
+        # shared between them, so they're all in one namespace.
         self.all_stations = {}
 
         # this dict will contain Transport objects, the key will be the route
         # name, the value is the object itself, reflecting the last known
         # state of this transport unit
-        # TODO should be an expiring dict
+        # TODO should be an expiring dict, as at some point a trolleybus will
+        # be taken offline (we won't receive a notification about it), yet the
+        # system will think it still belongs to that route.
         self.transports = {}
 
         self.feedback_chat_id = self.config["telegram"]["feedback_chat_id"]
@@ -61,13 +63,17 @@ class Infobot:
             transport = Transport()
             transport.board_name = data["board"]
             transport.rtu_id = data["rtu_id"]
-            transport.route = data["route"]
+
             self.transports[data["board"]] = transport
 
         transport.latitude = data["lat"]
         transport.longitude = data["lon"]
         transport.speed = data["speed"]
         transport.direction = data["dir"]
+        # contrary to common sense, the route can change throughout the day,
+        # so we cannot count on it being constant, thus we overwrite this
+        # value each time, just in case
+        transport.route = data["route"]
         try:
             transport.last_station_order = data["last_station"]
         except KeyError:
