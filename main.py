@@ -1,4 +1,5 @@
 import logging
+import logging.config
 import sys
 import json
 import csv
@@ -19,6 +20,8 @@ from structures import Route, Transport
 import constants as c
 import keyboards as k
 from mqtt_client import MqttClient
+
+logging.config.fileConfig('logging.conf')
 
 log = logging.getLogger("infobot")
 
@@ -80,7 +83,6 @@ class Infobot:
             # the key isn't there, it means the backend doesn't have this info
             # yet. We ignore it for now, the info will be here within a few iterations
             pass
-        # log.debug('Update RTU:%s, station %s', transport.rtu_id, transport.last_station_order)
 
     def load_route(self, path, route_name):
         """Load route data from the given CSV file
@@ -119,11 +121,7 @@ class Infobot:
         log.info("Loading station data")
         for entry in os.listdir("res/routes"):
             route_name, _extension = os.path.splitext(entry)
-            if route_name != "30":
-                # for now we only support route 30 and ignore the others
-                continue
             route = self.load_route(os.path.join("res/routes", entry), route_name)
-
             self.routes[route_name] = route
             self.predictions[route_name] = {}
 
@@ -151,49 +149,7 @@ class Infobot:
         command, if any.
         :param raw: str, the raw text sent by the user"""
         parts = raw.split(" ", 1)
-        if len(parts) == 1:
-            return None
-        else:
-            return parts[1]
-
-    def form_digest(self, route, station_id=None):
-        """Form a digest of ETAs for a given route and optionally, a station_id
-        :param route: str, route number/name
-        :param station_id: int, optional, station for which you want the data"""
-        if station_id is not None:
-            data = self.predictions[route][station_id]
-            return str(data)
-
-        # otherwise it is a request for the whole thing
-        result = ""
-        last_prognosis = None
-        for station_id in self.routes[route]:
-            station_name = self.stations[route][station_id]
-            etas = self.predictions[route].get(station_id, [])
-            if not etas:
-                result += f"{station_name}: 🚫\n"
-                continue
-
-            string_etas = ", ".join([str(item) for item in etas])
-            current_prognosis = etas[0]
-            if current_prognosis == 0:
-                # it means the trolleybus is there right now, let's add a
-                # trolleybus icon, for a better effect
-                result += f"{c.ICON_BUS} {station_name}: {string_etas}\n"
-            else:
-                if (
-                    last_prognosis is not None
-                    and last_prognosis != 0
-                    and current_prognosis < last_prognosis
-                ):
-                    # it means we're dealing with the case where the transport is
-                    # between stations, so we render a bus icon between stations
-                    # result += f'{c.ICON_BUS} în tranzit...\n'
-                    result += f"{c.ICON_BUS}\n"
-                result += f"{station_name}: {string_etas}\n"
-            last_prognosis = current_prognosis
-
-        return result
+        return None if len(parts) == 1 else parts[1]
 
     def form_digest_markdown(self, route, station_id=None):
         """Form a digest of ETAs for a given route and optionally, a station_id
@@ -218,7 +174,6 @@ class Infobot:
             etas = self.predictions[route].get(station_id, [])
             if not etas:
                 result += f"{station_name}: 🚫\n"
-                # result += f'{station_name:<30}: 🚫\n'
                 continue
 
             string_etas = ", ".join([str(item) for item in etas])
@@ -264,7 +219,6 @@ class Infobot:
 
     def on_bot_prognosis(self, bot, update):
         """Send a message when the command /prognosis is issued."""
-        user = update.effective_user
         raw_text = update.message.text
 
         route = self.get_params(raw_text)
@@ -280,7 +234,6 @@ class Infobot:
                 return
 
             etas = self.form_digest_markdown(route)
-            # update.message.reply_text(etas)
             bot.sendMessage(
                 chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN
             )
@@ -294,7 +247,6 @@ class Infobot:
                 disable_notification=True,
                 disable_web_page_preview=True,
             )
-            # update.message.reply_text(nudges)
 
     @staticmethod
     def on_bot_help(bot, update):
@@ -311,12 +263,10 @@ class Infobot:
     @staticmethod
     def on_bot_feedback(bot, update):
         """Send a message when the command /feeedback is issued."""
-        user = update.effective_user
         update.message.reply_text(c.MSG_FEEDBACK)
         return c.STATE_EXPECTING_FEEDBACK
 
-    @staticmethod
-    def on_bot_feedback_received(bot, update):
+    def on_bot_feedback_received(self, bot, update):
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
@@ -345,7 +295,6 @@ class Infobot:
         dispatcher.add_handler(CommandHandler("help", self.on_bot_help))
         dispatcher.add_handler(CommandHandler("prognosis", self.on_bot_prognosis))
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
-        # dispatcher.add_handler(CommandHandler("feedback", self.on_bot_feedback))
         dispatcher.add_handler(self.feedback_handler())
         dispatcher.add_handler(CallbackQueryHandler(self.on_bot_route_button))
         dispatcher.add_error_handler(self.on_bot_error)
@@ -367,11 +316,9 @@ class Infobot:
         """Invoked when they sent /prognosis without a parameter, then clicked
         a button from the list of routes"""
         query = update.callback_query
-        user = update.effective_user
         route = query.data
 
         etas = self.form_digest_markdown(route)
-        # update.message.reply_text(etas)
         bot.sendMessage(
             chat_id=query.message.chat_id,
             text=etas,
@@ -389,14 +336,6 @@ class Infobot:
             disable_notification=True,
             disable_web_page_preview=True,
         )
-        # update.message.reply_text(nudges)
-
-        # response = self.form_digest(route)
-        #
-        #
-        # bot.edit_message_text(text=response,
-        #                       chat_id=query.message.chat_id,
-        #                       message_id=query.message.message_id)
 
     def send_locations(self, bot, chat_id, route):
         """Send transport unit location info to the user
@@ -425,7 +364,6 @@ class Infobot:
                 title=segment_name,
                 address=board_info,
             )
-            # bot.send_location(chat_id, latitude=entry.latitude, longitude=entry.longitude, disable_notification=True)
 
         return
 
@@ -476,7 +414,7 @@ class Infobot:
                 )
 
     def on_mqtt(self, client, userdata, msg):
-        # log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
+        log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
         try:
             data = json.loads(msg.payload)
         except ValueError:
@@ -511,14 +449,6 @@ class Infobot:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.DEBUG,
-        # format='%(asctime)s %(levelname)5s %(name)12s  %(threadName)s - %(message)s')
-        format="%(asctime)s %(levelname)5s %(name)5s - %(message)s",
-    )
-
-    logging.getLogger("telegram").setLevel(logging.WARNING)
-    logging.getLogger("JobQueue").setLevel(logging.WARNING)
     log.info("Starting Infobot v%s", c.VERSION)
 
     config_path = sys.argv[-1]
