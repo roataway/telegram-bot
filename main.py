@@ -1,4 +1,5 @@
 import logging
+import logging.config
 import sys
 import json
 import csv
@@ -19,6 +20,8 @@ from structures import Route, Transport
 import constants as c
 import keyboards as k
 from mqtt_client import MqttClient
+
+logging.config.fileConfig('logging.conf')
 
 log = logging.getLogger("infobot")
 
@@ -112,10 +115,9 @@ class Infobot:
         log.info("Loading station data")
         for entry in os.listdir("res/routes"):
             route_name, _extension = os.path.splitext(entry)
-            if route_name in c.SUPPORTED_ROUTES:
-                route = self.load_route(os.path.join("res/routes", entry), route_name)
-                self.routes[route_name] = route
-                self.predictions[route_name] = {}
+            route = self.load_route(os.path.join("res/routes", entry), route_name)
+            self.routes[route_name] = route
+            self.predictions[route_name] = {}
 
     def serve(self):
         """The main loop"""
@@ -406,6 +408,7 @@ class Infobot:
                 )
 
     def on_mqtt(self, client, userdata, msg):
+        log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
         try:
             data = json.loads(msg.payload)
         except ValueError:
@@ -440,13 +443,6 @@ class Infobot:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s %(levelname)5s %(name)5s - %(message)s",
-    )
-
-    logging.getLogger("telegram").setLevel(logging.WARNING)
-    logging.getLogger("JobQueue").setLevel(logging.WARNING)
     log.info("Starting Infobot v%s", c.VERSION)
 
     config_path = sys.argv[-1]
