@@ -1,0 +1,30 @@
+station_id,station_order,station_name,direction
+29,1,Stăuceni (pornire),Stăuceni → Centru
+901,2,str. Ion Creangă,Stăuceni → Centru
+902,3,str. Constructorilor,Stăuceni → Centru
+903,4,str. Grătieşti,Stăuceni → Centru
+904,5,str. Păcii,Stăuceni → Centru
+905,6,str. Alexei Mateevici,Stăuceni → Centru
+906,7,str. Socoleni,Stăuceni → Centru
+907,8,Calea Orheiului 115,Stăuceni → Centru
+26,9,str. Vasile Badiu,Stăuceni → Centru
+909,10,bd. Renaşterii,Stăuceni → Centru
+910,11,Circul,Stăuceni → Centru
+911,12,str. Romană,Stăuceni → Centru
+912,13,str. Eugen Doga,Stăuceni → Centru
+913,14,str. Columna,Stăuceni → Centru
+914,15,Grădina Publică,Stăuceni → Centru
+16,16,str. 31 August 1989,Stăuceni → Centru
+915,17,bd. Ştefan cel Mare,Centru → Stăuceni
+916,18,bd. Grigore Vieru,Centru → Stăuceni
+917,19,str. Romană,Centru → Stăuceni
+918,20,Circul,Centru → Stăuceni
+919,21,str. Florilor,Centru → Stăuceni
+920,22,Calea Orheiului (memorial),Centru → Stăuceni
+27,23,str. Vasile Badiu,Centru → Stăuceni
+922,24,Calea Orheiului 115,Centru → Stăuceni
+923,25,str. Socoleni,Centru → Stăuceni
+924,26,str. Păcii,Centru → Stăuceni
+925,27,str. Grătieşti,Centru → Stăuceni
+926,28,str. Constructorilor,Centru → Stăuceni
+927,29,str. Vasile Alecsandri,Centru → Stăuceni
