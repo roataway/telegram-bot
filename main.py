@@ -118,12 +118,13 @@ class Infobot:
 
     def preload_structures(self):
         """Load information about routes from the available resource files"""
-        log.info("Loading station data")
+        log.debug("Loading station data")
         for entry in os.listdir("res/routes"):
             route_name, _extension = os.path.splitext(entry)
             route = self.load_route(os.path.join("res/routes", entry), route_name)
             self.routes[route_name] = route
             self.predictions[route_name] = {}
+        log.info("Loaded %i routes: %s", len(self.routes), sorted(list(self.routes.keys())))
 
     def serve(self):
         """The main loop"""
