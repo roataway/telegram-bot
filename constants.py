@@ -18,7 +18,7 @@ MSG_UNSUPPORTED_ROUTE = "Cu regret, nu am informații pentru această rută."
 MSG_ABOUT = (
     f"Roata v{VERSION} lucrează pentru binele public. Spune-le și prietenilor tăi despre mine. "
     "Dacă ai întrebări sau sugestii, folosește comanda /feedback. "
-    "Pentru afla despre funcții noi, găsește-ne pe Twitter, @roataway.\n"
+    "Pentru a afla despre funcții noi, găsește-ne pe Twitter, @roataway.\n"
     "Datele sunt preluate de pe http://rtec.dekart.com/infodash"
 )
 MSG_THANKS = (
