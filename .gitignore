@@ -2,6 +2,11 @@
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
+# these are used on the production server and get in the way
+res/chatbot-supervisord.conf
+res/config.yaml
+
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
