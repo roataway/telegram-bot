@@ -160,16 +160,16 @@ class Infobot:
             data = self.predictions[route][station_id]
             return str(data)
 
-        # otherwise it is a request for the whole thing
+        # otherwise it is a request for the whole list of stations, we start
+        # with the name of the first segment of the route
         result = """*%s*\n""" % self.routes[route].segments[0]
 
         last_prognosis = None
         for station_id in self.routes[route].station_sequence:
-            # if station_id == c.SPLIT_30:
             if station_id == self.routes[route].cutoff_station_id:
                 # for easier readability, we add the header for the return part
                 # of the route
-                result += "\n*%s*\n" "" % self.routes[route].segments[0]
+                result += "\n*%s*\n" "" % self.routes[route].segments[1]
 
             station_name = self.all_stations[station_id]
             etas = self.predictions[route].get(station_id, [])
