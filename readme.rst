@@ -133,4 +133,5 @@ Contributors and credits
 * Roata wăy relies on an external data stream. None of the features of this bot would work without the backend and the hardware designed for deployment on the trolleybuses themselves.
 * The production bot instance is hosted on a server generously provided by ``name withheld``.
 * Initial proof of concept written by ``name withheld #2``.
+* Others listed here: https://github.com/roataway/telegram-bot/graphs/contributors
 * How about 👉 **you** 👈?
