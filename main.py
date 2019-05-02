@@ -179,9 +179,14 @@ class Infobot:
 
             string_etas = ", ".join([str(item) for item in etas])
             current_prognosis = etas[0]
-            if current_prognosis == 0:
+            if current_prognosis == 0 and last_prognosis != 0:
                 # it means the trolleybus is there right now, let's add a
                 # trolleybus icon, for a better effect
+                # however, there is another condition - there must be no
+                # stretch of 0 ETAs. When the stations are close to each
+                # other, they can both have a legit "0 minutes" ETA, but
+                # only the first entry can realistically be the place where
+                # the transport is right now.
                 result += f"{c.ICON_BUS} {station_name}: {string_etas}\n"
             else:
                 if (
@@ -191,7 +196,6 @@ class Infobot:
                 ):
                     # it means we're dealing with the case where the transport is
                     # between stations, so we render a bus icon between stations
-                    # result += f'{c.ICON_BUS} în tranzit...\n'
                     result += f"{c.ICON_BUS} \n"
                 result += f"{station_name}: {string_etas}\n"
             last_prognosis = current_prognosis

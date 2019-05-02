@@ -1,4 +1,4 @@
-VERSION = "1.3"
+VERSION = "1.4"
 ICON_BUS = "🚌"
 
 QOS_EXACTLY_ONCE = 2  # MQTT quality of service
