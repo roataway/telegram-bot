@@ -20,6 +20,7 @@ from structures import Route, Transport
 import constants as c
 import keyboards as k
 from mqtt_client import MqttClient
+import restapi
 
 logging.config.fileConfig('logging.conf')
 
@@ -34,6 +35,7 @@ class Infobot:
         :param config: dict, the raw config (normally loaded from YAML)"""
         self.mqtt = mqtt
         self.bot = bot
+        self.rest = None  # REST API, will be initialized in self.serve
         self.config = config
 
         self.predictions = {}
@@ -140,6 +142,11 @@ class Infobot:
         )
         self.mqtt.client.loop_start()
 
+        log.info('Starting REST API in separate thread')
+        self.rest = restapi.BotRestApi(self.send_message_hook)
+        restapi.run_background(self.rest)
+
+        log.info('Starting Telegram bot')
         self.init_bot()
         self.bot.start_polling()
         self.bot.idle()
@@ -275,7 +282,8 @@ class Infobot:
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
-        log.info(f"FEED from [{user.username}]: {raw_text}")
+        # import pdb; pdb.set_trace()
+        log.info(f"FEED from [{user.username} @{update.effective_chat.id}]: {raw_text}")
         update.message.reply_text(c.MSG_THANKS)
 
         report = f"FEED from [{user.username or user.full_name}]: {raw_text}"
@@ -286,6 +294,26 @@ class Infobot:
     def on_bot_feedback_cancel(bot, update):
         user = update.message.from_user
         update.message.reply_text(c.MSG_FEEDBACK_CANCELLED)
+        return ConversationHandler.END
+
+    @staticmethod
+    def on_bot_reply(bot, update):
+        """Send a message when the command /reply is issued."""
+        update.message.reply_text(c.MSG_REPLY_HINT)
+        return c.STATE_EXPECTING_REPLY
+
+    def on_bot_reply_received(self, bot, update):
+        """Send a message when the command /reply is issued and we received a reply."""
+        user = update.message.from_user
+        raw_text = update.message.text
+        log.info(f"REPLY from [{user.username} @{update.effective_chat.id}]: {raw_text}")
+
+        report = f"REPLY from [{user.username or user.full_name}]: {raw_text}"
+        bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
+        return ConversationHandler.END
+
+    @staticmethod
+    def on_bot_reply_cancel(bot, update):
         return ConversationHandler.END
 
     @staticmethod
@@ -301,6 +329,7 @@ class Infobot:
         dispatcher.add_handler(CommandHandler("prognosis", self.on_bot_prognosis))
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
         dispatcher.add_handler(self.feedback_handler())
+        dispatcher.add_handler(self.reply_handler())
         dispatcher.add_handler(CallbackQueryHandler(self.on_bot_route_button))
         dispatcher.add_error_handler(self.on_bot_error)
 
@@ -316,6 +345,21 @@ class Infobot:
             fallbacks=[CommandHandler("cancel", self.on_bot_feedback_cancel)],
         )
         return handler
+
+    def reply_handler(self):
+        """This creates a conversation in which we interact with a user who provided feedback"""
+        handler = ConversationHandler(
+            entry_points=[CommandHandler("reply", self.on_bot_reply)],
+            states={
+                c.STATE_EXPECTING_REPLY: [
+                    MessageHandler(Filters.text, self.on_bot_reply_received)
+                ]
+            },
+            fallbacks=[CommandHandler("cancel", self.on_bot_reply_cancel)],
+        )
+        return handler
+
+
 
     def on_bot_route_button(self, bot, update):
         """Invoked when they sent /prognosis without a parameter, then clicked
@@ -452,6 +496,16 @@ class Infobot:
             # data is a dict with the following keys: rtu_id, board, route, lat, lon, speed, dir
             self.refresh_transport(data)
 
+    @staticmethod
+    def send_message_hook(chat_id, text):
+        """This will be invoked by the REST API when the sysadmin wants to
+        send a message back to a user who left feedback via /feedback and
+        asked a question, which expects a response
+        :param chat_id: int, chat identifier
+        :param text: str, the text to be sent to the user"""
+        global bot
+        bot.bot.sendMessage(chat_id=chat_id, text=text+c.MSG_REPLY)
+
 
 if __name__ == "__main__":
     log.info("Starting Infobot v%s", c.VERSION)
@@ -470,7 +524,6 @@ if __name__ == "__main__":
         password=mqtt_conf["password"],
     )
     bot = Updater(token=config["telegram"]["token"])
-
     infobot = Infobot(mqtt, bot, config)
 
     try:

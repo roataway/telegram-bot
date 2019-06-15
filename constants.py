@@ -1,10 +1,13 @@
-VERSION = "1.4"
+VERSION = "1.5"
 ICON_BUS = "🚌"
 
 QOS_EXACTLY_ONCE = 2  # MQTT quality of service
 
 STATE_EXPECTING_FEEDBACK = 0
 STATE_GOT_FEEDBACK = 1
+STATE_EXPECTING_REPLY = 2
+STATE_GOT_REPLY = 3
+
 
 
 MSG_HELP = "Încearcă comanda `/prognosis 30`. " "Alte comenzi: /feedback, /about."
@@ -29,6 +32,8 @@ MSG_CHOOSE_ROUTE = "Alege ruta:"
 
 MSG_FEEDBACK = "Scrie aici sugestiile sau întrebările tale, și expediază mesajul. Dacă te-ai răzgândit: /cancel"
 MSG_FEEDBACK_CANCELLED = "Ehhh.. Ei bine, poate altă dată."
+MSG_REPLY = " \nrăspunde apăsând /reply"
+MSG_REPLY_HINT = "Scrie aici răspunsul tău. Dacă te-ai răzgândit: /cancel"
 
 
 MSG_FEEDBACK_NUDGE = "Cauți alte rute? Vrei noi funcționalități? Scrie-ne /feedback."

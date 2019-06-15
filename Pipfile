@@ -14,6 +14,7 @@ paho-mqtt = "*"
 python-telegram-bot = "*"
 reyaml = "*"
 dataclasses = "*"
+werkzeug = "*"
 
 [requires]
 python_version = "3.6"
