@@ -22,7 +22,7 @@ import keyboards as k
 from mqtt_client import MqttClient
 import restapi
 
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig("logging.conf")
 
 log = logging.getLogger("infobot")
 
@@ -126,7 +126,9 @@ class Infobot:
             route = self.load_route(os.path.join("res/routes", entry), route_name)
             self.routes[route_name] = route
             self.predictions[route_name] = {}
-        log.info("Loaded %i routes: %s", len(self.routes), sorted(list(self.routes.keys())))
+        log.info(
+            "Loaded %i routes: %s", len(self.routes), sorted(list(self.routes.keys()))
+        )
 
     def serve(self):
         """The main loop"""
@@ -142,11 +144,11 @@ class Infobot:
         )
         self.mqtt.client.loop_start()
 
-        log.info('Starting REST API in separate thread')
+        log.info("Starting REST API in separate thread")
         self.rest = restapi.BotRestApi(self.send_message_hook)
         restapi.run_background(self.rest)
 
-        log.info('Starting Telegram bot')
+        log.info("Starting Telegram bot")
         self.init_bot()
         self.bot.start_polling()
         self.bot.idle()
@@ -306,7 +308,9 @@ class Infobot:
         """Send a message when the command /reply is issued and we received a reply."""
         user = update.message.from_user
         raw_text = update.message.text
-        log.info(f"REPLY from [{user.username} @{update.effective_chat.id}]: {raw_text}")
+        log.info(
+            f"REPLY from [{user.username} @{update.effective_chat.id}]: {raw_text}"
+        )
 
         report = f"REPLY from [{user.username or user.full_name}]: {raw_text}"
         bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
@@ -358,8 +362,6 @@ class Infobot:
             fallbacks=[CommandHandler("cancel", self.on_bot_reply_cancel)],
         )
         return handler
-
-
 
     def on_bot_route_button(self, bot, update):
         """Invoked when they sent /prognosis without a parameter, then clicked
@@ -463,7 +465,9 @@ class Infobot:
                 )
 
     def on_mqtt(self, client, userdata, msg):
-        log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
+        log.debug(
+            "MQTT IN %s %i bytes `%s`", msg.topic, len(msg.payload), repr(msg.payload)
+        )
         try:
             data = json.loads(msg.payload)
         except ValueError:
@@ -504,7 +508,7 @@ class Infobot:
         :param chat_id: int, chat identifier
         :param text: str, the text to be sent to the user"""
         global bot
-        bot.bot.sendMessage(chat_id=chat_id, text=text+c.MSG_REPLY)
+        bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
 
 
 if __name__ == "__main__":

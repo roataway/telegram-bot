@@ -9,7 +9,6 @@ STATE_EXPECTING_REPLY = 2
 STATE_GOT_REPLY = 3
 
 
-
 MSG_HELP = "Încearcă comanda `/prognosis 30`. " "Alte comenzi: /feedback, /about."
 MSG_SAMPLE = (
     "Iată un exemplu de răspuns la comanda `/prognosis 30`, care arată "
