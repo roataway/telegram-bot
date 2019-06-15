@@ -15,6 +15,7 @@ from telegram.ext import (
     Filters,
 )
 from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup, ParseMode
+from telegram.ext.dispatcher import run_async
 
 from structures import Route, Transport
 import constants as c
@@ -284,7 +285,6 @@ class Infobot:
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
-        # import pdb; pdb.set_trace()
         log.info(f"FEED from [{user.username} @{update.effective_chat.id}]: {raw_text}")
         update.message.reply_text(c.MSG_THANKS)
 
@@ -501,6 +501,7 @@ class Infobot:
             self.refresh_transport(data)
 
     @staticmethod
+    @run_async
     def send_message_hook(chat_id, text):
         """This will be invoked by the REST API when the sysadmin wants to
         send a message back to a user who left feedback via /feedback and
@@ -509,6 +510,7 @@ class Infobot:
         :param text: str, the text to be sent to the user"""
         global bot
         bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
+        log.info('Sendweb: %r', text)
 
 
 if __name__ == "__main__":
