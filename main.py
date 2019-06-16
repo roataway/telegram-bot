@@ -375,6 +375,8 @@ class Infobot:
         a button from the list of routes"""
         query = update.callback_query
         route = query.data
+        user = update.effective_user
+        log.info(f'REQ from [{user.username or user.full_name} @{update.effective_chat.id}]: /prognosis {route} via kboard')
 
         etas = self.form_digest_markdown(route)
         bot.sendMessage(
