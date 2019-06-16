@@ -216,7 +216,9 @@ class Infobot:
     def on_bot_start(bot, update):
         """Send a message when the command /start is issued."""
         user = update.effective_user
-        log.info(f'ADD {user.username}, {user.full_name}, @{update.effective_chat.id}, {user.language_code}')
+        log.info(
+            f"ADD {user.username}, {user.full_name}, @{update.effective_chat.id}, {user.language_code}"
+        )
         update.message.reply_text(
             f"Bine ai venit, {user.username or user.full_name}. Roata v{c.VERSION} te ascultă!"
             f"\n Comanda /help îți va arăta ce pot face și va explica "
@@ -237,7 +239,9 @@ class Infobot:
         """Send a message when the command /prognosis is issued."""
         user = update.effective_user
         raw_text = update.message.text
-        log.info(f'REQ from [{user.username or user.full_name} @{update.effective_chat.id}]: {raw_text}')
+        log.info(
+            f"REQ from [{user.username or user.full_name} @{update.effective_chat.id}]: {raw_text}"
+        )
 
         route = self.get_params(raw_text)
         if route is None:
@@ -513,7 +517,7 @@ class Infobot:
         :param text: str, the text to be sent to the user"""
         global bot
         bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
-        log.info('Sendweb @%s: %s', chat_id, text)
+        log.info("Sendweb @%s: %s", chat_id, text)
 
 
 if __name__ == "__main__":
