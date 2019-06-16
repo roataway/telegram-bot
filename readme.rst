@@ -5,6 +5,13 @@ A Telegram bot to provide ETA for public transport in Chișinău. A live instanc
 
 The bot is written in Python and it was tested with 3.6, though earlier versions will work too, if you install the backported version of the ``dataclasses`` module.
 
+Discussions and development support
+===================================
+
+Head to https://roataway.zulipchat.com/ to ask questions about the code and its structure, suggest new features or ask for tips on how to get started with running your own copy of the bot.
+
+
+
 
 How to run it
 =============
