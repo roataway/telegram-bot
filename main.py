@@ -507,16 +507,14 @@ class Infobot:
             # data is a dict with the following keys: rtu_id, board, route, lat, lon, speed, dir
             self.refresh_transport(data)
 
-    @staticmethod
     @run_async
-    def send_message_hook(chat_id, text):
+    def send_message_hook(self, chat_id, text):
         """This will be invoked by the REST API when the sysadmin wants to
         send a message back to a user who left feedback via /feedback and
         asked a question, which expects a response
         :param chat_id: int, chat identifier
         :param text: str, the text to be sent to the user"""
-        global bot
-        bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
+        self.bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
         log.info("Sendweb @%s: %s", chat_id, text)
 
 
