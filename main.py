@@ -15,13 +15,15 @@ from telegram.ext import (
     Filters,
 )
 from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup, ParseMode
+from telegram.ext.dispatcher import run_async
 
 from structures import Route, Transport
 import constants as c
 import keyboards as k
 from mqtt_client import MqttClient
+import restapi
 
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig("logging.conf")
 
 log = logging.getLogger("infobot")
 
@@ -34,6 +36,7 @@ class Infobot:
         :param config: dict, the raw config (normally loaded from YAML)"""
         self.mqtt = mqtt
         self.bot = bot
+        self.rest = None  # REST API, will be initialized in self.serve
         self.config = config
 
         self.predictions = {}
@@ -124,7 +127,9 @@ class Infobot:
             route = self.load_route(os.path.join("res/routes", entry), route_name)
             self.routes[route_name] = route
             self.predictions[route_name] = {}
-        log.info("Loaded %i routes: %s", len(self.routes), sorted(list(self.routes.keys())))
+        log.info(
+            "Loaded %i routes: %s", len(self.routes), sorted(list(self.routes.keys()))
+        )
 
     def serve(self):
         """The main loop"""
@@ -140,6 +145,11 @@ class Infobot:
         )
         self.mqtt.client.loop_start()
 
+        log.info("Starting REST API in separate thread")
+        self.rest = restapi.BotRestApi(self.send_message_hook)
+        restapi.run_background(self.rest)
+
+        log.info("Starting Telegram bot")
         self.init_bot()
         self.bot.start_polling()
         self.bot.idle()
@@ -206,6 +216,9 @@ class Infobot:
     def on_bot_start(bot, update):
         """Send a message when the command /start is issued."""
         user = update.effective_user
+        log.info(
+            f"ADD {user.username}, {user.full_name}, @{update.effective_chat.id}, {user.language_code}"
+        )
         update.message.reply_text(
             f"Bine ai venit, {user.username or user.full_name}. Roata v{c.VERSION} te ascultă!"
             f"\n Comanda /help îți va arăta ce pot face și va explica "
@@ -224,7 +237,11 @@ class Infobot:
 
     def on_bot_prognosis(self, bot, update):
         """Send a message when the command /prognosis is issued."""
+        user = update.effective_user
         raw_text = update.message.text
+        log.info(
+            f"REQ from [{user.username or user.full_name} @{update.effective_chat.id}]: {raw_text}"
+        )
 
         route = self.get_params(raw_text)
         if route is None:
@@ -275,7 +292,7 @@ class Infobot:
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
-        log.info(f"FEED from [{user.username}]: {raw_text}")
+        log.info(f"FEED from [{user.username} @{update.effective_chat.id}]: {raw_text}")
         update.message.reply_text(c.MSG_THANKS)
 
         report = f"FEED from [{user.username or user.full_name}]: {raw_text}"
@@ -286,6 +303,28 @@ class Infobot:
     def on_bot_feedback_cancel(bot, update):
         user = update.message.from_user
         update.message.reply_text(c.MSG_FEEDBACK_CANCELLED)
+        return ConversationHandler.END
+
+    @staticmethod
+    def on_bot_reply(bot, update):
+        """Send a message when the command /reply is issued."""
+        update.message.reply_text(c.MSG_REPLY_HINT)
+        return c.STATE_EXPECTING_REPLY
+
+    def on_bot_reply_received(self, bot, update):
+        """Send a message when the command /reply is issued and we received a reply."""
+        user = update.message.from_user
+        raw_text = update.message.text
+        log.info(
+            f"REPLY from [{user.username} @{update.effective_chat.id}]: {raw_text}"
+        )
+
+        report = f"REPLY from [{user.username or user.full_name}]: {raw_text}"
+        bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
+        return ConversationHandler.END
+
+    @staticmethod
+    def on_bot_reply_cancel(bot, update):
         return ConversationHandler.END
 
     @staticmethod
@@ -301,6 +340,7 @@ class Infobot:
         dispatcher.add_handler(CommandHandler("prognosis", self.on_bot_prognosis))
         dispatcher.add_handler(CommandHandler("about", self.on_bot_about))
         dispatcher.add_handler(self.feedback_handler())
+        dispatcher.add_handler(self.reply_handler())
         dispatcher.add_handler(CallbackQueryHandler(self.on_bot_route_button))
         dispatcher.add_error_handler(self.on_bot_error)
 
@@ -314,6 +354,19 @@ class Infobot:
                 ]
             },
             fallbacks=[CommandHandler("cancel", self.on_bot_feedback_cancel)],
+        )
+        return handler
+
+    def reply_handler(self):
+        """This creates a conversation in which we interact with a user who provided feedback"""
+        handler = ConversationHandler(
+            entry_points=[CommandHandler("reply", self.on_bot_reply)],
+            states={
+                c.STATE_EXPECTING_REPLY: [
+                    MessageHandler(Filters.text, self.on_bot_reply_received)
+                ]
+            },
+            fallbacks=[CommandHandler("cancel", self.on_bot_reply_cancel)],
         )
         return handler
 
@@ -419,7 +472,9 @@ class Infobot:
                 )
 
     def on_mqtt(self, client, userdata, msg):
-        log.debug('MQTT IN %s %i bytes `%s`', msg.topic, len(msg.payload), repr(msg.payload))
+        log.debug(
+            "MQTT IN %s %i bytes `%s`", msg.topic, len(msg.payload), repr(msg.payload)
+        )
         try:
             data = json.loads(msg.payload)
         except ValueError:
@@ -452,6 +507,16 @@ class Infobot:
             # data is a dict with the following keys: rtu_id, board, route, lat, lon, speed, dir
             self.refresh_transport(data)
 
+    @run_async
+    def send_message_hook(self, chat_id, text):
+        """This will be invoked by the REST API when the sysadmin wants to
+        send a message back to a user who left feedback via /feedback and
+        asked a question, which expects a response
+        :param chat_id: int, chat identifier
+        :param text: str, the text to be sent to the user"""
+        self.bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
+        log.info("Sendweb @%s: %s", chat_id, text)
+
 
 if __name__ == "__main__":
     log.info("Starting Infobot v%s", c.VERSION)
@@ -470,7 +535,6 @@ if __name__ == "__main__":
         password=mqtt_conf["password"],
     )
     bot = Updater(token=config["telegram"]["token"])
-
     infobot = Infobot(mqtt, bot, config)
 
     try:
