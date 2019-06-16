@@ -510,7 +510,7 @@ class Infobot:
         :param text: str, the text to be sent to the user"""
         global bot
         bot.bot.sendMessage(chat_id=chat_id, text=text + c.MSG_REPLY)
-        log.info('Sendweb: %r', text)
+        log.info('Sendweb @%s: %s', chat_id, text)
 
 
 if __name__ == "__main__":

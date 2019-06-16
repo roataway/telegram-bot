@@ -62,7 +62,10 @@ def run_background(app, interface="127.0.0.1", port=5000):
     other programs (that take over the main loop) easier"""
     from werkzeug.serving import run_simple
 
-    Thread(target=run_simple, args=(interface, port, app), name="rest").start()
+    t = Thread(target=run_simple, args=(interface, port, app), name="rest")
+    t.daemon = True  # so that it dies when the main thread dies
+    t.start()
+    return t
 
 
 def dummy_message(chat_id, text):
