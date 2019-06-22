@@ -8,6 +8,5 @@ before_script:
   - pipenv install --dev
 
 script:
-  - make autoformat
   - make verify
   
