@@ -1,2 +1,10 @@
 [flake8]
+# We explicitly tell it to ignore line-length issues (E501), because
+# we run black before running flake8; if black is happy, then we're
+# happy. It seems that in some cases black will deliberately leave a
+# longer line intact, which would trigger warnings by other tools
+# W503, W504 - new line before/after binary operator - we ignore it,
+# because black insists on having it this way; there's no way to
+# reconcile them.
+ignore = E501, W503, W504
 max-line-length = 100

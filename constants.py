@@ -29,7 +29,10 @@ MSG_THANKS = (
 
 MSG_CHOOSE_ROUTE = "Alege ruta:"
 
-MSG_FEEDBACK = "Scrie aici sugestiile sau întrebările tale, și expediază mesajul. Dacă te-ai răzgândit: /cancel"
+MSG_FEEDBACK = (
+    "Scrie aici sugestiile sau întrebările tale, și expediază mesajul. "
+    "Dacă te-ai răzgândit: /cancel"
+)
 MSG_FEEDBACK_CANCELLED = "Ehhh.. Ei bine, poate altă dată."
 MSG_REPLY = " \nrăspunde apăsând /reply"
 MSG_REPLY_HINT = "Scrie aici răspunsul tău. Dacă te-ai răzgândit: /cancel"

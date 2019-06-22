@@ -301,7 +301,6 @@ class Infobot:
 
     @staticmethod
     def on_bot_feedback_cancel(bot, update):
-        user = update.message.from_user
         update.message.reply_text(c.MSG_FEEDBACK_CANCELLED)
         return ConversationHandler.END
 
@@ -376,7 +375,9 @@ class Infobot:
         query = update.callback_query
         route = query.data
         user = update.effective_user
-        log.info(f'REQ from [{user.username or user.full_name} @{update.effective_chat.id}]: /prognosis {route} via kboard')
+        log.info(
+            f"REQ from [{user.username or user.full_name} @{update.effective_chat.id}]: /prognosis {route} via kboard"
+        )
 
         etas = self.form_digest_markdown(route)
         bot.sendMessage(

@@ -10,6 +10,6 @@ autoformat:
 verify:
 	black --check *.py
 	flake8 --config=.flake8 *.py
-	pylint --rcfile=.pylintrc *.py
+	# pylint --rcfile=.pylintrc *.py
 	bandit *.py
-	
+
