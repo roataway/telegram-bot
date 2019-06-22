@@ -9,6 +9,10 @@
     :alt: Chat with the developers on Zulip
     :target: https://roataway.zulipchat.com/
 
+.. image:: https://img.shields.io/badge/telegram-use%20chat%20bot-blue.svg?logo=telegram
+    :alt: Use the chat bot on Telegram
+    :target: http://t.me/roataway_bot
+
 
 Overview
 ========
