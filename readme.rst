@@ -5,7 +5,7 @@
     :alt: GitHub license
     :target: https://github.com/roataway/telegram-bot/blob/master/LICENSE
 
-.. image:: https://img.shields.io/badge/zulip-join_chat-brightgreen.svg
+.. image:: https://img.shields.io/badge/zulip-join_developer_chat-blue.svg
     :alt: Chat with the developers on Zulip
     :target: https://roataway.zulipchat.com/
 
