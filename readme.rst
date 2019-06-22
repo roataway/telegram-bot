@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/roataway/telegram-bot.svg?branch=master
+    :target: https://travis-ci.org/roataway/telegram-bot
+
 Overview
 ========
 
