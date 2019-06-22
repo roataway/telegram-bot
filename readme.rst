@@ -1,6 +1,15 @@
 .. image:: https://travis-ci.org/roataway/telegram-bot.svg?branch=master
     :target: https://travis-ci.org/roataway/telegram-bot
 
+.. image:: https://img.shields.io/github/license/roataway/telegram-bot.svg
+    :alt: GitHub license
+    :target: https://github.com/roataway/telegram-bot/blob/master/LICENSE
+
+.. image:: https://img.shields.io/badge/zulip-join_chat-brightgreen.svg
+    :alt: Chat with the developers on Zulip
+    :target: https://roataway.zulipchat.com/
+
+
 Overview
 ========
 
@@ -11,7 +20,7 @@ The bot is written in Python and it was tested with 3.6, though earlier versions
 Discussions and development support
 ===================================
 
-Head to https://roataway.zulipchat.com/ to ask questions about the code and its structure, suggest new features or ask for tips on how to get started with running your own copy of the bot.
+Head to  to ask questions about the code and its structure, suggest new features or ask for tips on how to get started with running your own copy of the bot.
 
 
 
