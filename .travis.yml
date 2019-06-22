@@ -1,0 +1,13 @@
+language: python
+python:
+  - "3.6"
+ 
+#this will be executed before the scripts are started. Here we add the dependencies needed
+before_script:
+  - pip install pipenv
+  - pipenv install --dev
+
+script:
+  - make autoformat
+  - make verify
+  
