@@ -213,7 +213,7 @@ class Infobot:
         return result
 
     @staticmethod
-    def on_bot_start(bot, update):
+    def on_bot_start(update, context):
         """Send a message when the command /start is issued."""
         user = update.effective_user
         log.info(
@@ -228,14 +228,14 @@ class Infobot:
             f"Nu uita să povestești colegilor despre mine. Rrrroata wăy!!!"
         )
 
-        bot.sendMessage(
+        context.bot.sendMessage(
             chat_id=update.message.chat_id,
             text="test",
             parse_mode="HTML",
             reply_markup=ReplyKeyboardMarkup(k.default_board, one_time_keyboard=True),
         )
 
-    def on_bot_prognosis(self, bot, update):
+    def on_bot_prognosis(self, update, context):
         """Send a message when the command /prognosis is issued."""
         user = update.effective_user
         raw_text = update.message.text
@@ -256,13 +256,13 @@ class Infobot:
                 return
 
             etas = self.form_digest_markdown(route)
-            bot.sendMessage(
+            context.bot.sendMessage(
                 chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN
             )
 
-            self.send_locations(bot, update.message.chat_id, route)
+            self.send_locations(context.bot, update.message.chat_id, route)
             nudges = c.MSG_FEEDBACK_NUDGE + "\n" + c.MSG_CREDIT + "\n" + c.MSG_CHANGELOG
-            bot.sendMessage(
+            context.bot.sendMessage(
                 chat_id=update.message.chat_id,
                 text=nudges,
                 parse_mode=ParseMode.HTML,
@@ -271,24 +271,24 @@ class Infobot:
             )
 
     @staticmethod
-    def on_bot_help(bot, update):
+    def on_bot_help(update, context):
         """Send a message when the command /help is issued."""
         update.message.reply_text(c.MSG_HELP)
         update.message.reply_text(c.MSG_SAMPLE)
         update.message.reply_photo(photo=open("res/help-screenshot.png", "rb"))
 
     @staticmethod
-    def on_bot_about(bot, update):
+    def on_bot_about(update, context):
         """Send a message when the command /about is issued."""
         update.message.reply_text(c.MSG_ABOUT)
 
     @staticmethod
-    def on_bot_feedback(bot, update):
+    def on_bot_feedback(update, context):
         """Send a message when the command /feeedback is issued."""
         update.message.reply_text(c.MSG_FEEDBACK)
         return c.STATE_EXPECTING_FEEDBACK
 
-    def on_bot_feedback_received(self, bot, update):
+    def on_bot_feedback_received(self, update, context):
         """Send a message when the command /feeedback is issued."""
         user = update.message.from_user
         raw_text = update.message.text
@@ -296,21 +296,21 @@ class Infobot:
         update.message.reply_text(c.MSG_THANKS)
 
         report = f"FEED from [{user.username or user.full_name}]: {raw_text}"
-        bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
+        context.bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
         return ConversationHandler.END
 
     @staticmethod
-    def on_bot_feedback_cancel(bot, update):
+    def on_bot_feedback_cancel(update, context):
         update.message.reply_text(c.MSG_FEEDBACK_CANCELLED)
         return ConversationHandler.END
 
     @staticmethod
-    def on_bot_reply(bot, update):
+    def on_bot_reply(update, context):
         """Send a message when the command /reply is issued."""
         update.message.reply_text(c.MSG_REPLY_HINT)
         return c.STATE_EXPECTING_REPLY
 
-    def on_bot_reply_received(self, bot, update):
+    def on_bot_reply_received(self, update, context):
         """Send a message when the command /reply is issued and we received a reply."""
         user = update.message.from_user
         raw_text = update.message.text
@@ -319,17 +319,17 @@ class Infobot:
         )
 
         report = f"REPLY from [{user.username or user.full_name}]: {raw_text}"
-        bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
+        context.bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
         return ConversationHandler.END
 
     @staticmethod
-    def on_bot_reply_cancel(bot, update):
+    def on_bot_reply_cancel(update, context):
         return ConversationHandler.END
 
     @staticmethod
-    def on_bot_error(bot, update, error):
+    def on_bot_error(update, context):
         """Log Errors caused by Updates."""
-        log.warning('Update "%s" caused error "%s"', update, error)
+        log.warning('Update "%s" caused error "%s"', update, context.error)
 
     def init_bot(self):
         dispatcher = self.bot.dispatcher
@@ -369,7 +369,7 @@ class Infobot:
         )
         return handler
 
-    def on_bot_route_button(self, bot, update):
+    def on_bot_route_button(self, update, context):
         """Invoked when they sent /prognosis without a parameter, then clicked
         a button from the list of routes"""
         query = update.callback_query
@@ -380,17 +380,17 @@ class Infobot:
         )
 
         etas = self.form_digest_markdown(route)
-        bot.sendMessage(
+        context.bot.sendMessage(
             chat_id=query.message.chat_id,
             text=etas,
             parse_mode=ParseMode.MARKDOWN,
             disable_notification=True,
         )
 
-        self.send_locations(bot, query.message.chat_id, route)
+        self.send_locations(context.bot, query.message.chat_id, route)
 
         nudges = c.MSG_FEEDBACK_NUDGE + "\n" + c.MSG_CREDIT + "\n" + c.MSG_CHANGELOG
-        bot.sendMessage(
+        context.bot.sendMessage(
             chat_id=query.message.chat_id,
             text=nudges,
             parse_mode=ParseMode.HTML,
@@ -462,7 +462,7 @@ class Infobot:
                 )
 
         # and then for the second segment
-        bot.sendMessage(
+        context.bot.sendMessage(
             chat_id=chat_id, text=route_obj.segments[1], disable_notification=True
         )
         for entry in route_transports:
@@ -537,7 +537,7 @@ if __name__ == "__main__":
         username=mqtt_conf["username"],
         password=mqtt_conf["password"],
     )
-    bot = Updater(token=config["telegram"]["token"])
+    bot = Updater(token=config["telegram"]["token"], use_context=True)
     infobot = Infobot(mqtt, bot, config)
 
     try:
