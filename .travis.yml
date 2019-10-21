@@ -1,6 +1,8 @@
 language: python
 python:
   - "3.6"
+  - "3.7"
+  - "3.8"
  
 #this will be executed before the scripts are started. Here we add the dependencies needed
 before_script:

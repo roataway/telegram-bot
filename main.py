@@ -462,7 +462,7 @@ class Infobot:
                 )
 
         # and then for the second segment
-        context.bot.sendMessage(
+        bot.sendMessage(
             chat_id=chat_id, text=route_obj.segments[1], disable_notification=True
         )
         for entry in route_transports:
