@@ -260,8 +260,7 @@ class Infobot:
                 chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN
             )
 
-            self.send_locations(context.bot, update.message.chat_id, route)
-            nudges = c.MSG_FEEDBACK_NUDGE + "\n" + c.MSG_CREDIT + "\n" + c.MSG_CHANGELOG
+            nudges = c.MSG_MAP + '\n' + c.MSG_FEEDBACK_NUDGE
             context.bot.sendMessage(
                 chat_id=update.message.chat_id,
                 text=nudges,
@@ -295,7 +294,7 @@ class Infobot:
         log.info(f"FEED from [{user.username} @{update.effective_chat.id}]: {raw_text}")
         update.message.reply_text(c.MSG_THANKS)
 
-        report = f"FEED from [{user.username or user.full_name}]: {raw_text}"
+        report = f"FEED from [{user.username or user.full_name} @{update.effective_chat.id}]: {raw_text}"
         context.bot.sendMessage(chat_id=self.feedback_chat_id, text=report)
         return ConversationHandler.END
 
@@ -387,9 +386,7 @@ class Infobot:
             disable_notification=True,
         )
 
-        self.send_locations(context.bot, query.message.chat_id, route)
-
-        nudges = c.MSG_FEEDBACK_NUDGE + "\n" + c.MSG_CREDIT + "\n" + c.MSG_CHANGELOG
+        nudges = c.MSG_MAP + '\n' + c.MSG_FEEDBACK_NUDGE
         context.bot.sendMessage(
             chat_id=query.message.chat_id,
             text=nudges,
@@ -397,82 +394,6 @@ class Infobot:
             disable_notification=True,
             disable_web_page_preview=True,
         )
-
-    def send_locations(self, bot, chat_id, route):
-        """Send transport unit location info to the user
-        :param route: str, route name"""
-        transports = [item for item in self.transports.values() if item.route == route]
-        transports.sort(key=lambda x: x.board_name)
-
-        route_obj = self.routes[route]
-        for entry in transports:
-            if entry.last_station_order is None:
-                # It must be a non-empty string, hence it is a space.
-                segment_name = " "
-            else:
-                segment_name = (
-                    route_obj.segments[0]
-                    if entry.last_station_order < route_obj.cutoff_station_id
-                    else route_obj.segments[1]
-                )
-
-            board_info = f"bord nr. {entry.board_name}"
-            bot.send_venue(
-                chat_id,
-                latitude=entry.latitude,
-                longitude=entry.longitude,
-                disable_notification=True,
-                title=segment_name,
-                address=board_info,
-            )
-
-        return
-
-        route_transports = [
-            item
-            for item in self.transports.values()
-            if item.route == route and
-            # we need the second condition to deal with the cases when it is not
-            # yet known what station the transport has last visited, so it is
-            # impossible to determine whether it is before or beyond the
-            # cut-off point in the route sequence
-            item.last_station_order is not None
-        ]
-
-        if not route_transports:
-            # if the list is empty, it means all the transports are offline or missing
-            # in action, so there's no need to do anything
-            return
-
-        route_transports.sort(key=lambda x: x.last_station_order)
-
-        route_obj = self.routes[route]
-
-        # send info for the first segment
-        bot.sendMessage(
-            chat_id=chat_id, text=route_obj.segments[0], disable_notification=True
-        )
-        for entry in route_transports:
-            if entry.last_station_order < route_obj.cutoff_station_id:
-                bot.send_location(
-                    chat_id,
-                    latitude=entry.latitude,
-                    longitude=entry.longitude,
-                    disable_notification=True,
-                )
-
-        # and then for the second segment
-        bot.sendMessage(
-            chat_id=chat_id, text=route_obj.segments[1], disable_notification=True
-        )
-        for entry in route_transports:
-            if entry.last_station_order > route_obj.cutoff_station_id:
-                bot.send_location(
-                    chat_id,
-                    latitude=entry.latitude,
-                    longitude=entry.longitude,
-                    disable_notification=True,
-                )
 
     def on_mqtt(self, client, userdata, msg):
         log.debug(
