@@ -1,4 +1,4 @@
-VERSION = "1.5"
+VERSION = "1.5.1"
 ICON_BUS = "🚌"
 
 QOS_EXACTLY_ONCE = 2  # MQTT quality of service
@@ -21,7 +21,7 @@ MSG_ABOUT = (
     f"Roata v{VERSION} lucrează pentru binele public. Spune-le și prietenilor tăi despre mine. "
     "Dacă ai întrebări sau sugestii, folosește comanda /feedback. "
     "Pentru a afla despre funcții noi, găsește-ne pe Twitter, @roataway.\n"
-    "Datele sunt preluate de pe http://rtec.dekart.com/infodash"
+    "Datele sunt preluate de pe https://roataway.md"
 )
 MSG_THANKS = (
     "Îți mulțumim! Oamenii noștri cei mai buni în curând vor analiza ceea ce ai scris."
@@ -29,10 +29,7 @@ MSG_THANKS = (
 
 MSG_CHOOSE_ROUTE = "Alege ruta:"
 
-MSG_FEEDBACK = (
-    "Scrie aici sugestiile sau întrebările tale, și expediază mesajul. "
-    "Dacă te-ai răzgândit: /cancel"
-)
+MSG_FEEDBACK = "Scrie-ne sugestiile sau întrebările tale, și expediază mesajul. Dacă te-ai răzgândit: /cancel"
 MSG_FEEDBACK_CANCELLED = "Ehhh.. Ei bine, poate altă dată."
 MSG_REPLY = " \nrăspunde apăsând /reply"
 MSG_REPLY_HINT = "Scrie aici răspunsul tău. Dacă te-ai răzgândit: /cancel"
@@ -43,6 +40,6 @@ MSG_CHANGELOG = (
     'Află despre schimbări pe <a href="https://twitter.com/roataway">Twitter @roataway</a>, '
     "sau pe Telegram @roataway."
 )
-MSG_CREDIT = (
-    'Datele sunt preluate de pe <a href="http://rtec.dekart.com/infodash">Infodash</a>.'
-)
+MSG_CREDIT = 'Datele sunt preluate de pe <a href="https://roataway.md">Roataway.md</a>.'
+
+MSG_MAP = 'Vezi pe hartă: <a href="https://roataway.md">Roataway.md</a>.'
