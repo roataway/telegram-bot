@@ -401,9 +401,7 @@ class Infobot:
         )
 
         retry_keyboard = InlineKeyboardMarkup(k.build_route_menu([route,]))
-        update.effective_message.reply_text(
-            text="Refresh data for route:", reply_markup=retry_keyboard
-        )
+        update.effective_message.reply_text(c.MSG_REFRESH, reply_markup=retry_keyboard)
 
     def on_mqtt(self, client, userdata, msg):
         log.debug(
