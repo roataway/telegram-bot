@@ -273,9 +273,7 @@ class Infobot:
             )
 
             retry_keyboard = InlineKeyboardMarkup(k.build_route_menu([route,]))
-            update.message.reply_text(
-                "Refresh data for route:", reply_markup=retry_keyboard
-            )
+            update.message.reply_text(c.MSG_REFRESH, reply_markup=retry_keyboard)
 
     @staticmethod
     def on_bot_help(update, context):

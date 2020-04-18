@@ -1,4 +1,4 @@
-VERSION = "1.5.1"
+VERSION = "1.5.2"
 ICON_BUS = "🚌"
 
 QOS_EXACTLY_ONCE = 2  # MQTT quality of service
@@ -41,5 +41,6 @@ MSG_CHANGELOG = (
     "sau pe Telegram @roataway."
 )
 MSG_CREDIT = 'Datele sunt preluate de pe <a href="https://roataway.md">Roataway.md</a>.'
+MSG_REFRESH = "Actualizează"
 
 MSG_MAP = 'Vezi pe hartă: <a href="https://roataway.md">Roataway.md</a>.'
