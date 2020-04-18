@@ -14,7 +14,11 @@ from telegram.ext import (
     MessageHandler,
     Filters,
 )
-from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup, ParseMode
+from telegram import (
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+    ParseMode,
+)
 from telegram.ext.dispatcher import run_async
 
 from structures import Route, Transport
@@ -260,13 +264,17 @@ class Infobot:
                 chat_id=update.message.chat_id, text=etas, parse_mode=ParseMode.MARKDOWN
             )
 
-            nudges = c.MSG_MAP + '\n' + c.MSG_FEEDBACK_NUDGE
             context.bot.sendMessage(
                 chat_id=update.message.chat_id,
-                text=nudges,
+                text=f"{c.MSG_MAP}\n{c.MSG_FEEDBACK_NUDGE}",
                 parse_mode=ParseMode.HTML,
                 disable_notification=True,
                 disable_web_page_preview=True,
+            )
+
+            retry_keyboard = InlineKeyboardMarkup(k.build_route_menu([route,]))
+            update.message.reply_text(
+                "Refresh data for route:", reply_markup=retry_keyboard
             )
 
     @staticmethod
@@ -386,13 +394,17 @@ class Infobot:
             disable_notification=True,
         )
 
-        nudges = c.MSG_MAP + '\n' + c.MSG_FEEDBACK_NUDGE
         context.bot.sendMessage(
             chat_id=query.message.chat_id,
-            text=nudges,
+            text=f"{c.MSG_MAP}\n{c.MSG_FEEDBACK_NUDGE}",
             parse_mode=ParseMode.HTML,
             disable_notification=True,
             disable_web_page_preview=True,
+        )
+
+        retry_keyboard = InlineKeyboardMarkup(k.build_route_menu([route,]))
+        update.effective_message.reply_text(
+            text="Refresh data for route:", reply_markup=retry_keyboard
         )
 
     def on_mqtt(self, client, userdata, msg):
